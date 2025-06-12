@@ -1,0 +1,9 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - aws cloudformation deploy --template-file infra-pipeline.yml --stack-name tictactoe-infra --capabilities CAPABILITY_NAMED_IAM
+artifacts:
+  files:
+    - infra-pipeline.yml
