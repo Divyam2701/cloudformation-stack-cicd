@@ -34,7 +34,7 @@ Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: tictactoe-website-bucket
+      BucketName: website-python-27
       WebsiteConfiguration:
         IndexDocument: index.html
       CorsConfiguration:
@@ -58,7 +58,7 @@ Resources:
           - Effect: Allow
             Principal: "*"
             Action: "s3:GetObject"
-            Resource: arn:aws:s3:::tictactoe-website-bucket/*
+            Resource: arn:aws:s3:::website-python-27/*
 
   TicTacToeLambdaRole:
     Type: AWS::IAM::Role
