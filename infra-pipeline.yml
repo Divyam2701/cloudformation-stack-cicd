@@ -4,28 +4,28 @@ Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, and
 Parameters:
   GitHubOwner:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /github/cicd/github-owner
-    Description: SSM parameter path for GitHub repository owner (username/org)
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/github-owner
+    Description: SSM parameter ARN for GitHub repository owner (username/org)
   GitHubRepo:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /github/cicd/repo-name
-    Description: SSM parameter path for GitHub repository name
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/repo-name
+    Description: SSM parameter ARN for GitHub repository name
   GitHubBranch:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /github/cicd/branch
-    Description: SSM parameter path for GitHub branch to build from
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/branch
+    Description: SSM parameter ARN for GitHub branch to build from
   GitHubOAuthToken:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /github/oauth/token
-    Description: SSM SecureString parameter path for GitHub OAuth token (Personal Access Token)
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/token
+    Description: SSM parameter ARN for GitHub OAuth token (Personal Access Token)
   LambdaMemorySize:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /cloudformation/lamda/memory
-    Description: SSM parameter path for Lambda memory size (MB)
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/cloudformation/lamda/memory
+    Description: SSM parameter ARN for Lambda memory size (MB)
   LambdaEphemeralStorage:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /cloudformation/lamda/storage
-    Description: SSM parameter path for Lambda ephemeral storage (MB)
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/cloudformation/lamda/storage
+    Description: SSM parameter ARN for Lambda ephemeral storage (MB)
 
 Resources:
   ArtifactStore:
