@@ -264,6 +264,7 @@ Resources:
                 Repo: !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubOAuthToken
+                PollForSourceChanges: false  # Disable polling, use webhook for fast trigger on push
               RunOrder: 1
         - Name: Build
           Actions:
@@ -280,6 +281,20 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
+
+  PipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Name: CustomGitHubWebhook
+      TargetPipeline: !Ref Pipeline
+      TargetAction: Source
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/heads/{Branch}"
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubOAuthToken
+      RegisterWithThirdParty: true
 
 Outputs:
   ApiEndpoint:
