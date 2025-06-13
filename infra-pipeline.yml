@@ -18,6 +18,14 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/oauth/token
     Description: SSM parameter ARN for GitHub OAuth token (Personal Access Token)
+  LambdaMemorySize:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/cloudformation/lamda/memory
+    Description: SSM parameter ARN for Lambda memory size (MB)
+  LambdaEphemeralStorage:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/cloudformation/lamda/storage
+    Description: SSM parameter ARN for Lambda ephemeral storage (MB)
 
 Resources:
   ArtifactStore:
@@ -53,9 +61,9 @@ Resources:
       Role: !GetAtt TicTacToeLambdaRole.Arn
       Runtime: python3.9
       Timeout: 10
-      MemorySize: 512 # Set Lambda RAM (MB)
+      MemorySize: !Ref LambdaMemorySize
       EphemeralStorage:
-        Size: 1024 # Set Lambda /tmp storage (MB), adjust as needed
+        Size: !Ref LambdaEphemeralStorage
       # vCPU is not directly configurable, but for provisioned concurrency or larger RAM, AWS allocates more CPU
       Code:
         ZipFile: |
