@@ -3,21 +3,21 @@ Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, and
 
 Parameters:
   GitHubOwner:
-    Type: String
-    Default: Divyam2701
-    Description: GitHub repository owner (username/org)
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/github-owner
+    Description: SSM parameter ARN for GitHub repository owner (username/org)
   GitHubRepo:
-    Type: String
-    Default: serverless-cicd
-    Description: GitHub repository name
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/repo-name
+    Description: SSM parameter ARN for GitHub repository name
   GitHubBranch:
-    Type: String
-    Default: main
-    Description: GitHub branch to build from
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/branch
+    Description: SSM parameter ARN for GitHub branch to build from
   GitHubOAuthToken:
-    Type: String
-    NoEcho: true
-    Description: GitHub OAuth token (Personal Access Token)
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/oauth/token
+    Description: SSM parameter ARN for GitHub OAuth token (Personal Access Token)
 
 Resources:
   ArtifactStore:
@@ -53,6 +53,10 @@ Resources:
       Role: !GetAtt TicTacToeLambdaRole.Arn
       Runtime: python3.9
       Timeout: 10
+      MemorySize: 512 # Set Lambda RAM (MB)
+      EphemeralStorage:
+        Size: 1024 # Set Lambda /tmp storage (MB), adjust as needed
+      # vCPU is not directly configurable, but for provisioned concurrency or larger RAM, AWS allocates more CPU
       Code:
         ZipFile: |
           def lambda_handler(event, context):
