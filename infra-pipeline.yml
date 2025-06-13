@@ -1,5 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Serverless Tic-Tac-Toe App AWS Resources
+Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, and CodePipeline
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: Divyam2701
+    Description: GitHub repository owner (username/org)
+  GitHubRepo:
+    Type: String
+    Default: serverless-cicd
+    Description: GitHub repository name
+  GitHubBranch:
+    Type: String
+    Default: main
+    Description: GitHub branch to build from
+  GitHubOAuthToken:
+    Type: String
+    NoEcho: true
+    Description: GitHub OAuth token (Personal Access Token)
 
 Resources:
   ArtifactStore:
@@ -193,3 +211,8 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway Endpoint"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/tictactoe"
