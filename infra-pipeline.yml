@@ -34,6 +34,7 @@ Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: tictactoe-website-bucket
       WebsiteConfiguration:
         IndexDocument: index.html
       CorsConfiguration:
@@ -43,7 +44,7 @@ Resources:
             AllowedHeaders: ["*"]
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
-        BlockPublicPolicy: false  # <-- Allow public policies to be attached
+        BlockPublicPolicy: false
         IgnorePublicAcls: true
         RestrictPublicBuckets: false
 
@@ -57,7 +58,7 @@ Resources:
           - Effect: Allow
             Principal: "*"
             Action: "s3:GetObject"
-            Resource: !Sub "${WebsiteBucket.Arn}/*"
+            Resource: arn:aws:s3:::tictactoe-website-bucket/*
 
   TicTacToeLambdaRole:
     Type: AWS::IAM::Role
