@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, and CodePipeline
+Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, CodePipeline, and S3 Website Hosting
 
 Parameters:
   GitHubOwner:
@@ -30,6 +30,29 @@ Parameters:
 Resources:
   ArtifactStore:
     Type: AWS::S3::Bucket
+
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: ["*"]
+            AllowedMethods: ["GET"]
+            AllowedHeaders: ["*"]
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${WebsiteBucket.Arn}/*"
 
   TicTacToeLambdaRole:
     Type: AWS::IAM::Role
@@ -177,6 +200,34 @@ Resources:
                   - lambda:UpdateFunctionCode
                 Resource: "*"
 
+  ApiGatewayOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ""
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn: ApiGatewayMethod
@@ -228,3 +279,6 @@ Outputs:
   ApiEndpoint:
     Description: "API Gateway Endpoint"
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/tictactoe"
+  WebsiteURL:
+    Description: "S3 Website URL"
+    Value: !Sub "http://${WebsiteBucket}.s3-website-${AWS::Region}.amazonaws.com"
