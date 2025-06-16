@@ -4,11 +4,11 @@ Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, Cod
 Parameters:
   GitHubOwner:
     Type: String
-    Default: rishichauhan193
+    Default: Divyam2701
     Description: SSM parameter ARN for GitHub repository owner (username/org)
   GitHubRepo:
     Type: String
-    Default: ML-Code
+    Default: python-cicd-project
     Description: SSM parameter ARN for GitHub repository name
   GitHubBranch:
     Type: String
@@ -42,11 +42,6 @@ Resources:
           - AllowedOrigins: ["*"]
             AllowedMethods: ["GET"]
             AllowedHeaders: ["*"]
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: false
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: false
 
   WebsiteBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -86,18 +81,15 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TicTacToeLambda
-      Handler: lambda_function.lambda_handler
       Role: !GetAtt TicTacToeLambdaRole.Arn
-      Runtime: python3.11
+      PackageType: Image
+      Code:
+        ImageUri: "971937583465.dkr.ecr.us-west-1.amazonaws.com/tictactoe-lambda-ecr:latest"
       Timeout: 10
       MemorySize: !Ref LambdaMemorySize
       EphemeralStorage:
         Size: !Ref LambdaEphemeralStorage
-      # vCPU is not directly configurable, but for provisioned concurrency or larger RAM, AWS allocates more CPU
-      Code:
-        ZipFile: |
-          def lambda_handler(event, context):
-              return {"statusCode": 200, "body": "Lambda placeholder"}
+      # Handler and Runtime are not required for container images
 
   TicTacToeLambdaAlias:
     Type: AWS::Lambda::Alias
@@ -161,6 +153,13 @@ Resources:
                   - lambda:UpdateFunctionCode
                   - lambda:GetFunction
                   - s3:*
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
                 Resource: "*"
 
   CodeBuildProject:
@@ -180,6 +179,8 @@ Resources:
             Value: !Ref "AWS::Region"
           - Name: LAMBDA_FUNCTION_NAME
             Value: !Ref TicTacToeLambda
+          - Name: ECR_REPOSITORY_URI
+            Value: 971937583465.dkr.ecr.us-west-1.amazonaws.com/tictactoe-lambda-ecr
       ServiceRole: !GetAtt CodeBuildRole.Arn
 
   CodePipelineRole:
@@ -304,3 +305,4 @@ Outputs:
   WebsiteURL:
     Description: "S3 Website URL"
     Value: !Sub "http://${WebsiteBucket}.s3-website-${AWS::Region}.amazonaws.com"
+
