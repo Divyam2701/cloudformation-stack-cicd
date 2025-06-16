@@ -14,10 +14,10 @@ Parameters:
     Type: String
     Default: main
     Description: SSM parameter ARN for GitHub branch to build from
-  GitHubOAuthToken:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /github/cicd/token
-    Description: SSM parameter name for GitHub OAuth token (Personal Access Token)
+  # GitHubOAuthToken:
+  #   Type: AWS::SSM::Parameter::Value<String>
+  #   Default: /github/cicd/token
+  #   Description: SSM parameter name for GitHub OAuth token (Personal Access Token)
   LambdaMemorySize:
     Type: Number
     Default: 512
