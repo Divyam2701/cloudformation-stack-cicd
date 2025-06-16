@@ -82,6 +82,12 @@ Resources:
                   - logs:PutLogEvents
                   - s3:GetObject
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                Resource: "*"
 
   CodeBuildRole:
     Type: AWS::IAM::Role
