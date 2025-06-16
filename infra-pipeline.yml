@@ -84,7 +84,7 @@ Resources:
       Role: !GetAtt TicTacToeLambdaRole.Arn
       PackageType: Image
       Code:
-        ImageUri: "971937583465.dkr.ecr.us-west-1.amazonaws.com/tictactoe-lambda-ecr:latest"
+        ImageUri: "971937583465.dkr.ecr.us-west-1.amazonaws.com/python-ml:latest"
       Timeout: 10
       MemorySize: !Ref LambdaMemorySize
       EphemeralStorage:
