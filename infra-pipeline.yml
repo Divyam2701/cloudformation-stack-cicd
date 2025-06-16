@@ -3,28 +3,28 @@ Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, Cod
 
 Parameters:
   GitHubOwner:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/github-owner
+    Type: String
+    Default: rishichauhan193
     Description: SSM parameter ARN for GitHub repository owner (username/org)
   GitHubRepo:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/repo-name
+    Type: String
+    Default: ML-Code
     Description: SSM parameter ARN for GitHub repository name
   GitHubBranch:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/branch
+    Type: String
+    Default: main
     Description: SSM parameter ARN for GitHub branch to build from
   GitHubOAuthToken:
     Type: AWS::SSM::Parameter::Value<String>
     Default: arn:aws:ssm:us-west-1:971937583465:parameter/github/cicd/token
     Description: SSM parameter ARN for GitHub OAuth token (Personal Access Token)
   LambdaMemorySize:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: arn:aws:ssm:us-west-1:971937583465:parameter/cloudformation/lamda/memory
+    Type: Number
+    Default: 512
     Description: SSM parameter ARN for Lambda memory size (MB)
   LambdaEphemeralStorage:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: arn:aws:ssm:us-west-1:971937583465:parameter/cloudformation/lamda/storage
+    Type: Number
+    Default: 1024
     Description: SSM parameter ARN for Lambda ephemeral storage (MB)
 
 Resources:
@@ -88,7 +88,7 @@ Resources:
       FunctionName: TicTacToeLambda
       Handler: lambda_function.lambda_handler
       Role: !GetAtt TicTacToeLambdaRole.Arn
-      Runtime: python3.9
+      Runtime: python3.11
       Timeout: 10
       MemorySize: !Ref LambdaMemorySize
       EphemeralStorage:
