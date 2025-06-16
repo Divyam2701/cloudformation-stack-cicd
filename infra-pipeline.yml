@@ -101,21 +101,56 @@ Resources:
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: TicTacToeApi
+      Name: PdfQnAApi
 
-  ApiGatewayResource:
+  ApiGatewayRootMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !GetAtt ApiGatewayRestApi.RootResourceId
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt TicTacToeLambda.Arn }
+
+  ApiGatewayUploadResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: tictactoe
+      PathPart: upload
 
-  ApiGatewayMethod:
+  ApiGatewayUploadMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
-      ResourceId: !Ref ApiGatewayResource
-      HttpMethod: POST
+      ResourceId: !Ref ApiGatewayUploadResource
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt TicTacToeLambda.Arn }
+
+  ApiGatewayAskResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: ask
+
+  ApiGatewayAskMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayAskResource
+      HttpMethod: ANY
       AuthorizationType: NONE
       Integration:
         IntegrationHttpMethod: POST
@@ -130,88 +165,13 @@ Resources:
       FunctionName: !Ref TicTacToeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/tictactoe"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*"
 
-  CodeBuildRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codebuild.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CodeBuildPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:*
-                  - lambda:UpdateFunctionCode
-                  - lambda:GetFunction
-                  - s3:*
-                  - ecr:GetAuthorizationToken
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:CompleteLayerUpload
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:InitiateLayerUpload
-                  - ecr:PutImage
-                  - ecr:UploadLayerPart
-                Resource: "*"
-
-  CodeBuildProject:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Name: TicTacToeBuild
-      Source:
-        Type: CODEPIPELINE
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/standard:5.0
-        Type: LINUX_CONTAINER
-        EnvironmentVariables:
-          - Name: AWS_DEFAULT_REGION
-            Value: !Ref "AWS::Region"
-          - Name: LAMBDA_FUNCTION_NAME
-            Value: !Ref TicTacToeLambda
-          - Name: ECR_REPOSITORY_URI
-            Value: 971937583465.dkr.ecr.us-west-1.amazonaws.com/tictactoe-lambda-ecr
-      ServiceRole: !GetAtt CodeBuildRole.Arn
-
-  CodePipelineRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codepipeline.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CodePipelinePolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - codebuild:*
-                  - s3:*
-                  - iam:PassRole
-                  - lambda:GetFunction
-                  - lambda:UpdateFunctionCode
-                Resource: "*"
-
-  ApiGatewayOptionsMethod:
+  ApiGatewayOptionsMethodUpload:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
-      ResourceId: !Ref ApiGatewayResource
+      ResourceId: !Ref ApiGatewayUploadResource
       HttpMethod: OPTIONS
       AuthorizationType: NONE
       Integration:
@@ -220,7 +180,35 @@ Resources:
           - StatusCode: 200
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
-              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS,ANY'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ""
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayOptionsMethodAsk:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayAskResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS,ANY'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             ResponseTemplates:
               application/json: ""
@@ -237,7 +225,10 @@ Resources:
 
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
-    DependsOn: ApiGatewayMethod
+    DependsOn:
+      - ApiGatewayRootMethod
+      - ApiGatewayUploadMethod
+      - ApiGatewayAskMethod
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       StageName: dev
@@ -301,7 +292,7 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: "API Gateway Endpoint"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/tictactoe"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
   WebsiteURL:
     Description: "S3 Website URL"
     Value: !Sub "http://${WebsiteBucket}.s3-website-${AWS::Region}.amazonaws.com"
