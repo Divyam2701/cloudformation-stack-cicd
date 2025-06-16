@@ -42,6 +42,11 @@ Resources:
           - AllowedOrigins: ["*"]
             AllowedMethods: ["GET"]
             AllowedHeaders: ["*"]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
 
   WebsiteBucketPolicy:
     Type: AWS::S3::BucketPolicy
