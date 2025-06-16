@@ -75,6 +75,40 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
+                  - s3:GetObject
+                Resource: "*"
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                  - s3:*
+                  - codebuild:*
+                  - codepipeline:*
+                  - lambda:GetFunction
+                  - lambda:UpdateFunctionCode
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                  - iam:PassRole
                 Resource: "*"
 
   CodePipelineRole:
@@ -134,7 +168,6 @@ Resources:
       MemorySize: !Ref LambdaMemorySize
       EphemeralStorage:
         Size: !Ref LambdaEphemeralStorage
-      # Handler and Runtime are not required for container images
 
   TicTacToeLambdaAlias:
     Type: AWS::Lambda::Alias
@@ -301,7 +334,7 @@ Resources:
                 Repo: !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubOAuthToken
-                PollForSourceChanges: false  # Disable polling, use webhook for fast trigger on push
+                PollForSourceChanges: false
               RunOrder: 1
         - Name: Build
           Actions:
