@@ -101,6 +101,27 @@ Resources:
                   - lambda:UpdateFunctionCode
                 Resource: "*"
 
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: TicTacToeBuild
+      Source:
+        Type: CODEPIPELINE
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:5.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref "AWS::Region"
+          - Name: LAMBDA_FUNCTION_NAME
+            Value: !Ref TicTacToeLambda
+          - Name: ECR_REPOSITORY_URI
+            Value: 971937583465.dkr.ecr.us-west-1.amazonaws.com/python-ml:latest
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+
   TicTacToeLambda:
     Type: AWS::Lambda::Function
     Properties:
