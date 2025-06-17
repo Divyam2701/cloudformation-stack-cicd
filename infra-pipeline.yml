@@ -142,6 +142,8 @@ Resources:
             Value: !Ref TicTacToeLambda
           - Name: ECR_REPOSITORY_URI
             Value: 971937583465.dkr.ecr.us-west-1.amazonaws.com/python-ml:latest
+          - Name: OPENAI_API_KEY
+            Value: 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
       ServiceRole: !GetAtt CodeBuildRole.Arn
 
   TicTacToeLambda:
@@ -183,6 +185,7 @@ Resources:
     Properties:
       Name: PdfQnAApi
 
+  # Root resource (/) - supports ANY
   ApiGatewayRootMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -197,6 +200,7 @@ Resources:
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
           - { LambdaArn: !GetAtt TicTacToeLambda.Arn }
 
+  # /upload resource and POST method
   ApiGatewayUploadResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -204,12 +208,12 @@ Resources:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: upload
 
-  ApiGatewayUploadMethod:
+  ApiGatewayUploadPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       ResourceId: !Ref ApiGatewayUploadResource
-      HttpMethod: ANY
+      HttpMethod: POST
       AuthorizationType: NONE
       Integration:
         IntegrationHttpMethod: POST
@@ -218,36 +222,7 @@ Resources:
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
           - { LambdaArn: !GetAtt TicTacToeLambda.Arn }
 
-  ApiGatewayAskResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref ApiGatewayRestApi
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: ask
-
-  ApiGatewayAskMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref ApiGatewayRestApi
-      ResourceId: !Ref ApiGatewayAskResource
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS_PROXY
-        Uri: !Sub
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-          - { LambdaArn: !GetAtt TicTacToeLambda.Arn }
-
-  LambdaApiInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref TicTacToeLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*"
-
-  ApiGatewayOptionsMethodUpload:
+  ApiGatewayUploadOptionsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
@@ -260,7 +235,7 @@ Resources:
           - StatusCode: 200
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
-              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS,ANY'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             ResponseTemplates:
               application/json: ""
@@ -275,7 +250,29 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
-  ApiGatewayOptionsMethodAsk:
+  # /ask resource and POST method
+  ApiGatewayAskResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: ask
+
+  ApiGatewayAskPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayAskResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt TicTacToeLambda.Arn }
+
+  ApiGatewayAskOptionsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
@@ -288,7 +285,7 @@ Resources:
           - StatusCode: 200
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
-              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS,ANY'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             ResponseTemplates:
               application/json: ""
@@ -307,8 +304,8 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       - ApiGatewayRootMethod
-      - ApiGatewayUploadMethod
-      - ApiGatewayAskMethod
+      - ApiGatewayUploadPostMethod
+      - ApiGatewayAskPostMethod
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       StageName: dev
@@ -372,6 +369,11 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: "API Gateway Endpoint"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
+
+  LambdaFunctionUrl:
+    Description: "Lambda Function URL (serves Lambda response, e.g. index.html if your code returns it)"
+    Value: !GetAtt TicTacToeLambdaUrl.FunctionUrl
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
 
   LambdaFunctionUrl:
