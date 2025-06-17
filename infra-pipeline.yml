@@ -227,30 +227,29 @@ Resources:
         Uri: !Sub
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TicTacToeLambda.Arn}/invocations
 
-  LambdaApiInvokePermission:
+  LambdaApiInvokePermissionRoot:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref TicTacToeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub
-        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/
+
   LambdaApiInvokePermissionUpload:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref TicTacToeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub
-        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/upload
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/upload
+
   LambdaApiInvokePermissionAsk:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref TicTacToeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub
-        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/ask
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/ask
 
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -319,8 +318,6 @@ Resources:
       RegisterWithThirdParty: true
 
 
-
-
   PipelineWebhook:
     Type: AWS::CodePipeline::Webhook
     Properties:
@@ -335,7 +332,6 @@ Resources:
       AuthenticationConfiguration:
         SecretToken: !Ref GitHubOAuthToken
       RegisterWithThirdParty: true
-
 
 Outputs:
   ApiEndpoint:
