@@ -233,7 +233,24 @@ Resources:
       FunctionName: !Ref TicTacToeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/*"
+      SourceArn: !Sub
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/
+  LambdaApiInvokePermissionUpload:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TicTacToeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/upload
+  LambdaApiInvokePermissionAsk:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TicTacToeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/ask
 
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -302,61 +319,7 @@ Resources:
       RegisterWithThirdParty: true
 
 
-Outputs:
-  ApiEndpoint:
-    Description: "API Gateway Endpoint"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
-  ApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-      - ApiGatewayRootMethod
-      - ApiGatewayRootOptionsMethod
-      - ApiGatewayUploadPostMethod
-      - ApiGatewayAskPostMethod
-    Properties:
-      RestApiId: !Ref ApiGatewayRestApi
-      StageName: dev
 
-  Pipeline:
-    Type: AWS::CodePipeline::Pipeline
-    Properties:
-      RoleArn: !GetAtt CodePipelineRole.Arn
-      ArtifactStore:
-        Type: S3
-        Location: !Ref ArtifactStore
-      Stages:
-        - Name: Source
-          Actions:
-            - Name: Source
-              ActionTypeId:
-                Category: Source
-                Owner: ThirdParty
-                Provider: GitHub
-                Version: 1
-              OutputArtifacts:
-                - Name: SourceOutput
-              Configuration:
-                Owner: !Ref GitHubOwner
-                Repo: !Ref GitHubRepo
-                Branch: !Ref GitHubBranch
-                OAuthToken: !Ref GitHubOAuthToken
-                PollForSourceChanges: false
-              RunOrder: 1
-        - Name: Build
-          Actions:
-            - Name: Build
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: 1
-              InputArtifacts:
-                - Name: SourceOutput
-              OutputArtifacts:
-                - Name: BuildOutput
-              Configuration:
-                ProjectName: !Ref CodeBuildProject
-              RunOrder: 1
 
   PipelineWebhook:
     Type: AWS::CodePipeline::Webhook
