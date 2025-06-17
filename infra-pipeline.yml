@@ -142,8 +142,6 @@ Resources:
             Value: !Ref TicTacToeLambda
           - Name: ECR_REPOSITORY_URI
             Value: 971937583465.dkr.ecr.us-west-1.amazonaws.com/python-ml:latest
-          - Name: OPENAI_API_KEY
-            Value: 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
       ServiceRole: !GetAtt CodeBuildRole.Arn
 
   TicTacToeLambda:
