@@ -186,6 +186,20 @@ Resources:
       EphemeralStorage:
         Size: !Ref LambdaEphemeralStorage
 
+  TicTacToeLambdaUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      AuthType: NONE
+      TargetFunctionArn: !GetAtt TicTacToeLambda.Arn
+
+  TicTacToeLambdaUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TicTacToeLambda
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
   TicTacToeLambdaAlias:
     Type: AWS::Lambda::Alias
     Properties:
@@ -391,4 +405,7 @@ Outputs:
   WebsiteURL:
     Description: "S3 Website URL"
     Value: !Sub "http://${WebsiteBucket}.s3-website-${AWS::Region}.amazonaws.com"
+  LambdaFunctionUrl:
+    Description: "Lambda Function URL (serves Lambda response, e.g. index.html if your code returns it)"
+    Value: !GetAtt TicTacToeLambdaUrl.FunctionUrl
 
