@@ -191,7 +191,7 @@ Resources:
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: upload
+      PathPart: uploads
 
   ApiGatewayUploadPostMethod:
     Type: AWS::ApiGateway::Method
@@ -212,7 +212,7 @@ Resources:
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: ask
+      PathPart: asked
 
   ApiGatewayAskPostMethod:
     Type: AWS::ApiGateway::Method
