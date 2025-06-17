@@ -402,9 +402,6 @@ Outputs:
   ApiEndpoint:
     Description: "API Gateway Endpoint"
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
-  WebsiteURL:
-    Description: "S3 Website URL"
-    Value: !Sub "http://${WebsiteBucket}.s3-website-${AWS::Region}.amazonaws.com"
   LambdaFunctionUrl:
     Description: "Lambda Function URL (serves Lambda response, e.g. index.html if your code returns it)"
     Value: !GetAtt TicTacToeLambdaUrl.FunctionUrl
