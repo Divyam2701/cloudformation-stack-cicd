@@ -31,35 +31,6 @@ Resources:
   ArtifactStore:
     Type: AWS::S3::Bucket
 
-  WebsiteBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: website-python-27
-      WebsiteConfiguration:
-        IndexDocument: index.html
-      CorsConfiguration:
-        CorsRules:
-          - AllowedOrigins: ["*"]
-            AllowedMethods: ["GET"]
-            AllowedHeaders: ["*"]
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        IgnorePublicAcls: true
-        BlockPublicPolicy: false
-        RestrictPublicBuckets: false
-
-  WebsiteBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref WebsiteBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action: "s3:GetObject"
-            Resource: arn:aws:s3:::website-python-27/*
-
   TicTacToeLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -376,6 +347,35 @@ Resources:
                 Provider: CodeBuild
                 Version: 1
               InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+
+  PipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Name: CustomGitHubWebhook
+      TargetPipeline: !Ref Pipeline
+      TargetPipelineVersion: !GetAtt Pipeline.Version
+      TargetAction: Source
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/heads/{Branch}"
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubOAuthToken
+      RegisterWithThirdParty: true
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway Endpoint"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
+  LambdaFunctionUrl:
+    Description: "Lambda Function URL (serves Lambda response, e.g. index.html if your code returns it)"
+    Value: !GetAtt TicTacToeLambdaUrl.FunctionUrl
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: BuildOutput
