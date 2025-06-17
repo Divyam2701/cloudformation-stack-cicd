@@ -373,36 +373,7 @@ Outputs:
   ApiEndpoint:
     Description: "API Gateway Endpoint"
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
+
   LambdaFunctionUrl:
     Description: "Lambda Function URL (serves Lambda response, e.g. index.html if your code returns it)"
     Value: !GetAtt TicTacToeLambdaUrl.FunctionUrl
-                - Name: SourceOutput
-              OutputArtifacts:
-                - Name: BuildOutput
-              Configuration:
-                ProjectName: !Ref CodeBuildProject
-              RunOrder: 1
-
-  PipelineWebhook:
-    Type: AWS::CodePipeline::Webhook
-    Properties:
-      Name: CustomGitHubWebhook
-      TargetPipeline: !Ref Pipeline
-      TargetPipelineVersion: !GetAtt Pipeline.Version
-      TargetAction: Source
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: "refs/heads/{Branch}"
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: !Ref GitHubOAuthToken
-      RegisterWithThirdParty: true
-
-Outputs:
-  ApiEndpoint:
-    Description: "API Gateway Endpoint"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
-  LambdaFunctionUrl:
-    Description: "Lambda Function URL (serves Lambda response, e.g. index.html if your code returns it)"
-    Value: !GetAtt TicTacToeLambdaUrl.FunctionUrl
-
