@@ -4,11 +4,11 @@ Description: Serverless Tic-Tac-Toe App with Lambda, API Gateway, CodeBuild, Cod
 Parameters:
   GitHubOwner:
     Type: String
-    Default: rishichauhan193
+    Default: rishi-7span
     Description: SSM parameter ARN for GitHub repository owner (username/org)
   GitHubRepo:
     Type: String
-    Default: everest-repo
+    Default: everest-ai-deployment
     Description: SSM parameter ARN for GitHub repository name
   GitHubBranch:
     Type: String
