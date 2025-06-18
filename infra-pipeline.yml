@@ -161,6 +161,9 @@ Resources:
                   - iam:PassRole
                   - lambda:GetFunction
                   - lambda:UpdateFunctionCode
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
                 Resource: "*"
 
   CodeBuildProject:
