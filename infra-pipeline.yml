@@ -258,7 +258,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       ApiId: !Ref FastApiHttpApi
-      StageName: dev
+      StageName: $default
       AutoDeploy: true
 
   FastApiHttpApiLambdaPermission:
@@ -328,7 +328,7 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: "HTTP API Endpoint"
-    Value: !Sub "https://${FastApiHttpApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
+    Value: !Sub "https://${FastApiHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
 Outputs:
   ApiEndpoint:
     Description: "API Gateway Endpoint"
