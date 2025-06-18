@@ -221,6 +221,20 @@ Resources:
     Properties:
       Name: PdfQnAApi
 
+  # Root resource (/) - ANY method for proxy
+  ApiGatewayRootAnyMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !GetAtt ApiGatewayRestApi.RootResourceId
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TicTacToeLambda.Arn}/invocations
+
   # Proxy resource for API Gateway (catch-all path)
   ApiGatewayProxyResource:
     Type: AWS::ApiGateway::Resource
@@ -234,20 +248,6 @@ Resources:
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       ResourceId: !Ref ApiGatewayProxyResource
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS_PROXY
-        Uri: !Sub
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TicTacToeLambda.Arn}/invocations
-
-  # Root resource (/) - ANY method for proxy
-  ApiGatewayRootAnyMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref ApiGatewayRestApi
-      ResourceId: !GetAtt ApiGatewayRestApi.RootResourceId
       HttpMethod: ANY
       AuthorizationType: NONE
       Integration:
@@ -329,10 +329,10 @@ Resources:
         SecretToken: !Ref GitHubOAuthToken
       RegisterWithThirdParty: true
 
-
-
-  PipelineWebhook:
-    Type: AWS::CodePipeline::Webhook
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway Endpoint"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
     Properties:
       Name: CustomGitHubWebhook
       TargetPipeline: !Ref Pipeline
