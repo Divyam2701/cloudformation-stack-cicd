@@ -329,44 +329,6 @@ Outputs:
   ApiEndpoint:
     Description: "HTTP API Endpoint"
     Value: !Sub "https://${FastApiHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
-Outputs:
-  ApiEndpoint:
-    Description: "API Gateway Endpoint"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
-    Properties:
-      Name: CustomGitHubWebhook
-      TargetPipeline: !Ref Pipeline
-      TargetPipelineVersion: !GetAtt Pipeline.Version
-      TargetAction: Source
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: "refs/heads/{Branch}"
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: !Ref GitHubOAuthToken
-      RegisterWithThirdParty: true
-
-
-  PipelineWebhook:
-    Type: AWS::CodePipeline::Webhook
-    Properties:
-      Name: CustomGitHubWebhook
-      TargetPipeline: !Ref Pipeline
-      TargetPipelineVersion: !GetAtt Pipeline.Version
-      TargetAction: Source
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: "refs/heads/{Branch}"
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: !Ref GitHubOAuthToken
-      RegisterWithThirdParty: true
-
-Outputs:
-  ApiEndpoint:
-    Description: "API Gateway Endpoint"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
-
 
 
 
