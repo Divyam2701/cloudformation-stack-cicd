@@ -326,19 +326,7 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
-        - Name: Deploy
-          Actions:
-            - Name: DeployLambdaImage
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Provider: Lambda
-                Version: 1
-              InputArtifacts:
-                - Name: BuildOutput
-              Configuration:
-                FunctionName: !Ref TicTacToeLambda
-              RunOrder: 1
+        
 
   PipelineWebhook:
     Type: AWS::CodePipeline::Webhook
