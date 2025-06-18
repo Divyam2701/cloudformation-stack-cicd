@@ -164,6 +164,17 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:UpdateAlias
+                  - lambda:PublishVersion
+                  - lambda:ListAliases
+                  - lambda:GetAlias
+                  - lambda:GetFunctionConfiguration
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:DescribeImages
+                  - ecr:DescribeRepositories
+                  - ecr:GetAuthorizationToken
                 Resource: "*"
 
   CodeBuildProject:
