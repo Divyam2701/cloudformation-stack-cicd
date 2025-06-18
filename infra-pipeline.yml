@@ -20,7 +20,7 @@ Parameters:
     Description: SSM parameter ARN for GitHub OAuth token (Personal Access Token)
   LambdaMemorySize:
     Type: Number
-    Default: 512
+    Default: 1024
     Description: SSM parameter ARN for Lambda memory size (MB)
   LambdaEphemeralStorage:
     Type: Number
