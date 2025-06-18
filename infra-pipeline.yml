@@ -216,58 +216,61 @@ Resources:
       FunctionVersion: $LATEST
       Name: live
 
-  # --- Use HTTP API Gateway with proxy for any API path ---
-  FastApiHttpApi:
-    Type: AWS::ApiGatewayV2::Api
+  # --- Use REST API Gateway with proxy for any API path ---
+  ApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: FastApiHttpApi
-      ProtocolType: HTTP
-      CorsConfiguration:
-        AllowOrigins:
-          - "*"
-        AllowMethods:
-          - "*"
-        AllowHeaders:
-          - "*"
+      Name: PdfQnAApi
 
-  FastApiHttpApiIntegration:
-    Type: AWS::ApiGatewayV2::Integration
+  # Root ANY method (for /)
+  ApiGatewayRootAnyMethod:
+    Type: AWS::ApiGateway::Method
     Properties:
-      ApiId: !Ref FastApiHttpApi
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TicTacToeLambda.Arn}/invocations
-      PayloadFormatVersion: "2.0"
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !GetAtt ApiGatewayRestApi.RootResourceId
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TicTacToeLambda.Arn}/invocations
 
-  # Proxy route for all paths and methods
-  FastApiHttpApiProxyRoute:
-    Type: AWS::ApiGatewayV2::Route
+  # Proxy resource for all sub-paths
+  ApiGatewayProxyResource:
+    Type: AWS::ApiGateway::Resource
     Properties:
-      ApiId: !Ref FastApiHttpApi
-      RouteKey: 'ANY /{proxy+}'
-      Target: !Sub integrations/${FastApiHttpApiIntegration}
+      RestApiId: !Ref ApiGatewayRestApi
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: '{proxy+}'
 
-  # Also handle the root path
-  FastApiHttpApiRootRoute:
-    Type: AWS::ApiGatewayV2::Route
+  ApiGatewayProxyAnyMethod:
+    Type: AWS::ApiGateway::Method
     Properties:
-      ApiId: !Ref FastApiHttpApi
-      RouteKey: 'ANY /'
-      Target: !Sub integrations/${FastApiHttpApiIntegration}
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayProxyResource
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TicTacToeLambda.Arn}/invocations
 
-  FastApiHttpApiStage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      ApiId: !Ref FastApiHttpApi
-      StageName: $default
-      AutoDeploy: true
-
-  FastApiHttpApiLambdaPermission:
+  LambdaApiInvokePermissionProxy:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref TicTacToeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FastApiHttpApi}/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayRootAnyMethod
+      - ApiGatewayProxyAnyMethod
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: dev
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -327,8 +330,8 @@ Resources:
 
 Outputs:
   ApiEndpoint:
-    Description: "HTTP API Endpoint"
-    Value: !Sub "https://${FastApiHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Description: "API Gateway Endpoint"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
 
 
 
