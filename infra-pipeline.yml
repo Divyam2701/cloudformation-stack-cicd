@@ -4,11 +4,11 @@ Description: Serverless everest-ai AWS Lambda, API Gateway, CodeBuild, CodePipel
 Parameters:
   GitHubOwner:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /everest-ai/GITHUB_OWNER
+    Default: rishi-7span
     Description: SSM parameter path for GitHub repository owner (username/org)
   GitHubRepo:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /everest-ai/GITHUB_REPO_NAME
+    Default: everest-ai-deployment
     Description: SSM parameter path for GitHub repository name
   GitHubBranch:
     Type: String
