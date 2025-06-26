@@ -12,7 +12,7 @@ Parameters:
     Description: SSM parameter path for GitHub repository name
   GitHubBranch:
     Type: String
-    Default: main
+    Default: staging
     Description: SSM parameter path for GitHub branch to build from
   LambdaMemorySize:
     Type: Number
