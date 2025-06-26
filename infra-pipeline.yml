@@ -299,62 +299,46 @@ Resources:
       Name: !Sub 'everest-ai-live-${Environment}'
       FunctionVersion: $LATEST
 
-  # EverestAiLambdaUrl:
-  #   Type: AWS::Lambda::Url
-  #   Properties:
-  #     AuthType: NONE
-  #     TargetFunctionArn: !GetAtt EverestAiLambda.Arn
+  EverestAiRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'everest-ai-${Environment}'
 
-  # EverestAiLambdaUrlPermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Ref EverestAiLambda
-  #     Action: lambda:InvokeFunctionUrl
-  #     Principal: "*"
-  #     FunctionUrlAuthType: NONE
-
-# --- Commenting out API Gateway resources ---
- EverestAiRestApi:
-   Type: AWS::ApiGateway::RestApi
-   Properties:
-     Name: !Sub 'everest-ai-${Environment}'
-
- EverestAiProxyResource:
-   Type: AWS::ApiGateway::Resource
-   Properties:
-     RestApiId: !Ref EverestAiRestApi
-     ParentId: !GetAtt EverestAiRestApi.RootResourceId
-     PathPart: '{proxy+'}'
+  EverestAiProxyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref EverestAiRestApi
+      ParentId: !GetAtt EverestAiRestApi.RootResourceId
+      PathPart: '{proxy+}'
 
   EverestAiProxyAnyMethod:
-   Type: AWS::ApiGateway::Method
-   Properties:
-     RestApiId: !Ref EverestAiRestApi
-     ResourceId: !Ref EverestAiProxyResource
-     HttpMethod: ANY
-     AuthorizationType: NONE
-     Integration:
-       IntegrationHttpMethod: POST
-       Type: AWS_PROXY
-       Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EverestAiLambda.Arn}/invocations
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref EverestAiRestApi
+      ResourceId: !Ref EverestAiProxyResource
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EverestAiLambda.Arn}/invocations
 
   EverestAiLambdaApiInvokePermissionProxy:
-   Type: AWS::Lambda::Permission
-   Properties:
-     FunctionName: !Ref EverestAiLambda
-     Action: lambda:InvokeFunction
-     Principal: apigateway.amazonaws.com
-     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${EverestAiRestApi}/*/*/*
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EverestAiLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${EverestAiRestApi}/*/*/*
 
   EverestAiApiGatewayDeployment:
-   Type: AWS::ApiGateway::Deployment
-   DependsOn:
-     - EverestAiProxyAnyMethod
-   Properties:
-     RestApiId: !Ref EverestAiRestApi
-     StageName: ai
-     Description: !Sub 'Deployment for everest-ai API Gateway (${Environment})'
-# --- End API Gateway resources ---
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - EverestAiProxyAnyMethod
+    Properties:
+      RestApiId: !Ref EverestAiRestApi
+      StageName: ai
+      Description: !Sub 'Deployment for everest-ai API Gateway (${Environment})'
 
   EverestAiPipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -412,7 +396,6 @@ Resources:
       AuthenticationConfiguration:
         SecretToken: !Ref GitHubOAuthToken
       RegisterWithThirdParty: true
-
 
 Outputs:
   ApiEndpoint:
