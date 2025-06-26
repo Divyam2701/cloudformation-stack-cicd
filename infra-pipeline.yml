@@ -109,7 +109,7 @@ Parameters:
     Description: SSM parameter path for ECR Image Build Name
   Environment:
     Type: String
-    Default: develop
+    Default: Stage
     Description: Environment name (e.g., dev, staging, prod) used for resource naming
 
 Resources:
