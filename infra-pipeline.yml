@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Serverless everest-ai AWS Lambda, API Gateway, CodeBuild, CodePipeline, ECR and S3
+Description: Serverless everest-ai AWS Lambda, API Gateway, CodeBuild, CodePipeline, ECR and S3 
 
 Parameters:
   GitHubOwner:
@@ -111,10 +111,6 @@ Parameters:
     Type: String
     Default: stage
     Description: Environment name (e.g., dev, staging, prod) used for resource naming
-  LambdaTimeout:
-    Type: Number
-    Default: 60
-    Description: Lambda function timeout in seconds
 
 Resources:
   ArtifactStore:
@@ -272,7 +268,7 @@ Resources:
       PackageType: Image
       Code:
         ImageUri: !Ref EcrImageBuildNameLambda
-      Timeout: !Ref LambdaTimeout
+      Timeout: 40
       MemorySize: !Ref LambdaMemorySize
       EphemeralStorage:
         Size: !Ref LambdaEphemeralStorage
@@ -325,12 +321,12 @@ Resources:
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EverestAiLambdaAlias.Arn}/invocations
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EverestAiLambda.Arn}/invocations
 
   EverestAiLambdaApiInvokePermissionProxy:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref EverestAiLambdaAlias
+      FunctionName: !Ref EverestAiLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${EverestAiRestApi}/*/*/*
